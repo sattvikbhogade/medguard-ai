@@ -1,0 +1,19 @@
+{
+  "note": "Common brand-to-generic mappings for demo purposes. Not exhaustive.",
+  "drugs": [
+    {"brand": "Crocin Advance", "generic": "Paracetamol 500mg"},
+    {"brand": "Dolo 650", "generic": "Paracetamol 650mg"},
+    {"brand": "Calpol", "generic": "Paracetamol"},
+    {"brand": "Combiflam", "generic": "Ibuprofen + Paracetamol"},
+    {"brand": "Augmentin 625", "generic": "Amoxicillin + Clavulanic Acid"},
+    {"brand": "Azithral 500", "generic": "Azithromycin 500mg"},
+    {"brand": "Pantop 40", "generic": "Pantoprazole 40mg"},
+    {"brand": "Allegra 120", "generic": "Fexofenadine 120mg"},
+    {"brand": "Glycomet 500", "generic": "Metformin 500mg"},
+    {"brand": "Ecosprin 75", "generic": "Aspirin 75mg"},
+    {"brand": "Monocef", "generic": "Ceftriaxone"},
+    {"brand": "Zerodol-SP", "generic": "Aceclofenac + Paracetamol + Serratiopeptidase"},
+    {"brand": "Cetzine", "generic": "Cetirizine"},
+    {"brand": "Volini Gel", "generic": "Diclofenac Diethylamine Gel"}
+  ]
+}
