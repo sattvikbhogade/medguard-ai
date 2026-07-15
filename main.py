@@ -1,7 +1,11 @@
+import json
 import shutil
 from pathlib import Path
 
-from fastapi import FastAPI, UploadFile, File
+from fastapi import FastAPI, UploadFile, File, HTTPException
+
+from ai_service import extract_bill_data
+from analyzer import analyze_line_items
 
 app = FastAPI(title="MedGuard AI")
 
@@ -10,21 +14,57 @@ UPLOAD_DIR = Path(__file__).parent / "uploads"
 
 @app.get("/")
 def health_check():
-    # Simple route to confirm the server is alive.
     return {"status": "Backend Running"}
 
 
 @app.post("/upload")
 async def upload_bill(file: UploadFile = File(...)):
-    # Build the destination path inside uploads/
     destination = UPLOAD_DIR / file.filename
-
-    # Save the uploaded file to disk
     with open(destination, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
-
-    # No AI call here yet - this endpoint only proves the file arrived and saved correctly
     return {
         "status": "uploaded",
         "filename": file.filename
+    }
+
+
+def parse_gemini_json(raw_text: str) -> dict:
+    """
+    Gemini is instructed to return raw JSON, but occasionally wraps it in
+    markdown code fences anyway. Strip those defensively before parsing,
+    rather than assuming clean output every time.
+    """
+    cleaned = raw_text.strip()
+    if cleaned.startswith("```"):
+        cleaned = cleaned.strip("`")
+        cleaned = cleaned.replace("json\n", "", 1).replace("json", "", 1)
+        cleaned = cleaned.strip()
+    return json.loads(cleaned)
+
+
+@app.post("/analyze")
+async def analyze_bill(filename: str):
+    file_path = UPLOAD_DIR / filename
+
+    if not file_path.exists():
+        raise HTTPException(status_code=404, detail=f"File '{filename}' not found. Upload it first via /upload.")
+
+    try:
+        raw_result = extract_bill_data(str(file_path))
+    except Exception:
+        raise HTTPException(status_code=503, detail="AI service is temporarily unavailable. Please try again in a moment.")
+
+    try:
+        extracted = parse_gemini_json(raw_result)
+    except json.JSONDecodeError:
+        raise HTTPException(status_code=502, detail="AI extraction returned invalid JSON. Try again.")
+
+    analysis = analyze_line_items(extracted.get("line_items", []))
+
+    return {
+        "hospital_name": extracted.get("hospital_name"),
+        "bill_date": extracted.get("bill_date"),
+        "total_line_items": analysis["total_line_items"],
+        "total_findings": analysis["total_findings"],
+        "findings": analysis["findings"]
     }

@@ -1,3 +1,5 @@
+import time
+
 from google import genai
 from google.genai import types
 
@@ -29,20 +31,29 @@ no explanation:
 """
 
 
-def extract_bill_data(image_path: str) -> dict:
+def extract_bill_data(image_path: str, max_retries: int = 3) -> str:
     """
-    Sends a bill image to Gemini and returns structured line-item data.
+    Sends a bill image to Gemini and returns structured line-item data as raw text.
     This function does ONLY extraction - no rate comparison, no flagging.
+    Retries automatically if Gemini's servers are temporarily overloaded (503).
     """
     with open(image_path, "rb") as f:
         image_bytes = f.read()
 
-    response = client.models.generate_content(
-        model="gemini-flash-latest",
-        contents=[
-            types.Part.from_bytes(data=image_bytes, mime_type="image/jpeg"),
-            EXTRACTION_PROMPT,
-        ],
-    )
-
-    return response.text
+    for attempt in range(max_retries):
+        try:
+            response = client.models.generate_content(
+                model="gemini-flash-latest",
+                contents=[
+                    types.Part.from_bytes(data=image_bytes, mime_type="image/jpeg"),
+                    EXTRACTION_PROMPT,
+                ],
+            )
+            return response.text
+        except Exception as e:
+            if attempt < max_retries - 1:
+                wait_time = 2 ** attempt  # 1s, 2s, 4s
+                print(f"Attempt {attempt + 1} failed ({e}). Retrying in {wait_time}s...")
+                time.sleep(wait_time)
+            else:
+                raise
