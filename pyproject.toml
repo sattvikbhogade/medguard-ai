@@ -2,4 +2,10 @@
 name = "medguard-backend"
 version = "0.1.0"
 requires-python = ">=3.14"
-dependencies = []
+dependencies = [
+    "fastapi>=0.139.0",
+    "google-genai>=2.11.0",
+    "python-dotenv>=1.2.2",
+    "python-multipart>=0.0.32",
+    "uvicorn>=0.51.0",
+]

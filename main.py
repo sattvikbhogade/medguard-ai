@@ -1,16 +1,30 @@
-# This is a sample Python script.
+import shutil
+from pathlib import Path
 
-# Press Ctrl+F5 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
+from fastapi import FastAPI, UploadFile, File
+
+app = FastAPI(title="MedGuard AI")
+
+UPLOAD_DIR = Path(__file__).parent / "uploads"
 
 
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press F9 to toggle the breakpoint.
+@app.get("/")
+def health_check():
+    # Simple route to confirm the server is alive.
+    return {"status": "Backend Running"}
 
 
-# Press the green button in the gutter to run the script.
-if __name__ == '__main__':
-    print_hi('PyCharm')
+@app.post("/upload")
+async def upload_bill(file: UploadFile = File(...)):
+    # Build the destination path inside uploads/
+    destination = UPLOAD_DIR / file.filename
 
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+    # Save the uploaded file to disk
+    with open(destination, "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+
+    # No AI call here yet - this endpoint only proves the file arrived and saved correctly
+    return {
+        "status": "uploaded",
+        "filename": file.filename
+    }
