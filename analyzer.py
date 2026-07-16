@@ -135,3 +135,36 @@ def analyze_line_items(line_items: list) -> dict:
         "total_findings": len(findings),
         "findings": findings
     }
+
+# Points deducted per finding type. Higher = more serious.
+# These weights are a judgment call, not a formula - be ready to explain
+# the reasoning if asked: overcharge and duplicates cost the patient real
+# money directly, vague charges obscure what happened, generic-drug flags
+# are the mildest since the medicine itself isn't wrong, just costlier.
+SEVERITY_WEIGHTS = {
+    "overcharge": 12,
+    "duplicate_charge": 10,
+    "vague_charge": 6,
+    "generic_available": 3,
+}
+
+
+def compute_transparency_score(findings: list) -> dict:
+    score = 100
+    for finding in findings:
+        weight = SEVERITY_WEIGHTS.get(finding["type"], 5)
+        score -= weight
+
+    score = max(0, score)  # never go below 0
+
+    if score >= 85:
+        risk = "Low Concern"
+    elif score >= 60:
+        risk = "Needs Review"
+    else:
+        risk = "High Number of Potential Billing Concerns"
+
+    return {
+        "transparency_score": score,
+        "risk_level": risk
+    }

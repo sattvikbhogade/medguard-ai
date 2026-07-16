@@ -5,7 +5,7 @@ from pathlib import Path
 from fastapi import FastAPI, UploadFile, File, HTTPException
 
 from ai_service import extract_bill_data
-from analyzer import analyze_line_items
+from analyzer import analyze_line_items, compute_transparency_score
 
 app = FastAPI(title="MedGuard AI")
 
@@ -60,11 +60,14 @@ async def analyze_bill(filename: str):
         raise HTTPException(status_code=502, detail="AI extraction returned invalid JSON. Try again.")
 
     analysis = analyze_line_items(extracted.get("line_items", []))
+    score_data = compute_transparency_score(analysis["findings"])
 
     return {
         "hospital_name": extracted.get("hospital_name"),
         "bill_date": extracted.get("bill_date"),
         "total_line_items": analysis["total_line_items"],
         "total_findings": analysis["total_findings"],
+        "transparency_score": score_data["transparency_score"],
+        "risk_level": score_data["risk_level"],
         "findings": analysis["findings"]
     }
