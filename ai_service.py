@@ -57,3 +57,45 @@ def extract_bill_data(image_path: str, max_retries: int = 3) -> str:
                 time.sleep(wait_time)
             else:
                 raise
+
+COMPLAINT_PROMPT_TEMPLATE = """
+You are drafting a formal but simple complaint letter for a patient to submit
+to a hospital's billing department or a consumer grievance authority.
+
+Hospital: {hospital}
+Bill date: {date}
+
+The following potential billing concerns were identified:
+{findings_text}
+
+Write a short, polite, factual complaint letter. Do NOT accuse the hospital
+of fraud. Use "potential concern" language throughout. List each issue as a
+numbered point. End asking for a review and itemized clarification.
+
+Return plain text only, no markdown formatting.
+"""
+
+
+def generate_complaint(hospital_name: str, bill_date: str, findings: list) -> str:
+    findings_text = "\n".join(
+        f"- {f['message']}" for f in findings
+    ) or "- No specific issues listed."
+
+    prompt = COMPLAINT_PROMPT_TEMPLATE.format(
+        hospital=hospital_name or "the hospital",
+        date=bill_date or "the date on the bill",
+        findings_text=findings_text
+    )
+
+    for attempt in range(3):
+        try:
+            response = client.models.generate_content(
+                model="gemini-flash-latest",
+                contents=[prompt],
+            )
+            return response.text
+        except Exception as e:
+            if attempt < 2:
+                time.sleep(2 ** attempt)
+            else:
+                raise

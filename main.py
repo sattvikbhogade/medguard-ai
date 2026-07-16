@@ -4,7 +4,7 @@ from pathlib import Path
 
 from fastapi import FastAPI, UploadFile, File, HTTPException
 
-from ai_service import extract_bill_data
+from ai_service import extract_bill_data, generate_complaint
 from analyzer import analyze_line_items, compute_transparency_score
 
 app = FastAPI(title="MedGuard AI")
@@ -71,3 +71,28 @@ async def analyze_bill(filename: str):
         "risk_level": score_data["risk_level"],
         "findings": analysis["findings"]
     }
+
+@app.post("/complaint")
+async def create_complaint(filename: str):
+    file_path = UPLOAD_DIR / filename
+    if not file_path.exists():
+        raise HTTPException(status_code=404, detail=f"File '{filename}' not found.")
+
+    try:
+        raw_result = extract_bill_data(str(file_path))
+        extracted = parse_gemini_json(raw_result)
+    except Exception:
+        raise HTTPException(status_code=503, detail="AI service unavailable. Try again.")
+
+    analysis = analyze_line_items(extracted.get("line_items", []))
+
+    try:
+        complaint_text = generate_complaint(
+            extracted.get("hospital_name"),
+            extracted.get("bill_date"),
+            analysis["findings"]
+        )
+    except Exception:
+        raise HTTPException(status_code=503, detail="Complaint generation failed. Try again.")
+
+    return {"complaint_text": complaint_text}
