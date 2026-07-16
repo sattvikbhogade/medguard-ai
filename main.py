@@ -6,9 +6,18 @@ from fastapi import FastAPI, UploadFile, File, HTTPException
 
 from ai_service import extract_bill_data, generate_complaint
 from analyzer import analyze_line_items, compute_transparency_score
+from fastapi.middleware.cors import CORSMiddleware
+
 
 app = FastAPI(title="MedGuard AI")
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 UPLOAD_DIR = Path(__file__).parent / "uploads"
 
 

@@ -43,7 +43,7 @@ def extract_bill_data(image_path: str, max_retries: int = 3) -> str:
     for attempt in range(max_retries):
         try:
             response = client.models.generate_content(
-                model="gemini-flash-latest",
+                model="gemini-2.5-flash",
                 contents=[
                     types.Part.from_bytes(data=image_bytes, mime_type="image/jpeg"),
                     EXTRACTION_PROMPT,
