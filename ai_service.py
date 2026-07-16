@@ -34,29 +34,36 @@ no explanation:
 def extract_bill_data(image_path: str, max_retries: int = 3) -> str:
     """
     Sends a bill image to Gemini and returns structured line-item data as raw text.
-    This function does ONLY extraction - no rate comparison, no flagging.
-    Retries automatically if Gemini's servers are temporarily overloaded (503).
+    Tries gemini-flash-latest first; if that fails completely, falls back to
+    gemini-2.5-flash-lite as a second attempt before giving up.
     """
     with open(image_path, "rb") as f:
         image_bytes = f.read()
 
-    for attempt in range(max_retries):
-        try:
-            response = client.models.generate_content(
-                model="gemini-2.5-flash",
-                contents=[
-                    types.Part.from_bytes(data=image_bytes, mime_type="image/jpeg"),
-                    EXTRACTION_PROMPT,
-                ],
-            )
-            return response.text
-        except Exception as e:
-            if attempt < max_retries - 1:
-                wait_time = 2 ** attempt  # 1s, 2s, 4s
-                print(f"Attempt {attempt + 1} failed ({e}). Retrying in {wait_time}s...")
-                time.sleep(wait_time)
-            else:
-                raise
+    models_to_try = ["gemini-flash-latest", "gemini-2.0-flash"]
+
+    last_error = None
+    for model_name in models_to_try:
+        for attempt in range(max_retries):
+            try:
+                response = client.models.generate_content(
+                    model=model_name,
+                    contents=[
+                        types.Part.from_bytes(data=image_bytes, mime_type="image/jpeg"),
+                        EXTRACTION_PROMPT,
+                    ],
+                )
+                return response.text
+            except Exception as e:
+                last_error = e
+                if attempt < max_retries - 1:
+                    wait_time = 2 ** attempt
+                    print(f"[{model_name}] Attempt {attempt + 1} failed ({e}). Retrying in {wait_time}s...")
+                    time.sleep(wait_time)
+                else:
+                    print(f"[{model_name}] All {max_retries} attempts failed. Trying next model...")
+
+    raise last_error
 
 COMPLAINT_PROMPT_TEMPLATE = """
 You are drafting a formal but simple complaint letter for a patient to submit
