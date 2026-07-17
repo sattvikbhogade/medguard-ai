@@ -13,12 +13,17 @@ app = FastAPI(title="MedGuard AI")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
+    allow_origins=[
+        "http://localhost:5173",
+        "https://YOUR-FRONTEND-URL.vercel.app",
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 UPLOAD_DIR = Path(__file__).parent / "uploads"
+UPLOAD_DIR.mkdir(exist_ok=True)
 
 
 @app.get("/")
@@ -80,6 +85,7 @@ async def analyze_bill(filename: str):
         "risk_level": score_data["risk_level"],
         "findings": analysis["findings"]
     }
+
 
 @app.post("/complaint")
 async def create_complaint(filename: str):
