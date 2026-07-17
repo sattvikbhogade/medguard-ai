@@ -3,4 +3,12 @@ __pycache__/
 .env
 *.pyc
 .idea/
+.pytest_cache/
 uploads/
+backend/uploads/
+backend/__pycache__/
+backend/.pytest_cache/
+backend/tests/__pycache__/
+frontend/node_modules/
+frontend/dist/
+frontend/.idea/

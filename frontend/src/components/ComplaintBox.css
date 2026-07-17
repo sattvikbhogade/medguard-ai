@@ -1,0 +1,19 @@
+.complaint-box {
+  margin-top: 24px;
+}
+
+.complaint-box h3 {
+  margin-bottom: 12px;
+}
+
+.complaint-text {
+  white-space: pre-wrap;
+  font-family: inherit;
+  font-size: 14px;
+  line-height: 1.6;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 16px;
+}

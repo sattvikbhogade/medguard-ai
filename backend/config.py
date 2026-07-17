@@ -1,8 +1,11 @@
 import os
+from pathlib import Path
 from dotenv import load_dotenv
 
-# Loads variables from .env into the environment
-load_dotenv()
+# Explicitly load .env from the project root, one level up from backend/,
+# regardless of what directory uvicorn is launched from.
+ROOT_DIR = Path(__file__).parent.parent
+load_dotenv(dotenv_path=ROOT_DIR / ".env")
 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")

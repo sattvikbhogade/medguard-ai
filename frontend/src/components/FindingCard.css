@@ -1,0 +1,40 @@
+.finding-card {
+  margin-bottom: 12px;
+}
+
+.finding-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.finding-tag {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 20px;
+  text-transform: uppercase;
+}
+
+.tag-overcharge { background: #fef2f2; color: var(--red); }
+.tag-duplicate_charge { background: #fef9c3; color: #a16207; }
+.tag-vague_charge { background: #f1f5f9; color: var(--text-light); }
+.tag-generic_available { background: #eff6ff; color: var(--blue); }
+
+.finding-amount {
+  font-weight: 600;
+  color: var(--text);
+}
+
+.finding-item {
+  font-weight: 600;
+  font-size: 15px;
+  margin-bottom: 4px;
+}
+
+.finding-message {
+  font-size: 14px;
+  color: var(--text-light);
+  line-height: 1.4;
+}
