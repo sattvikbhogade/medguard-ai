@@ -15,7 +15,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:5173",
-        "https://YOUR-FRONTEND-URL.vercel.app",
+        "https://medguard-ai-pi.vercel.app",
     ],
     allow_credentials=True,
     allow_methods=["*"],
